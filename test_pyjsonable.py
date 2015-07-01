@@ -102,4 +102,7 @@ class StrictDictTests( unittest.TestCase ):
         self._test_json_dumps(house_dict)
 
 
-
+class StrictDictExtendTests( unittest.TestCase ):
+    def test_meta_sets(self):
+        plain_dict = StrictDict(foo="bar")
+        self.assertFalse(plain_dict.Meta.required_keys)
