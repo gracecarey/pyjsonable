@@ -38,25 +38,26 @@ Native, validatable python objects ready for json serialization
         is_vegan=False,
         cups_sugar=5,
         decorations=["sprinkles"]
-        frosting=FrostingDict(å
+        frosting=FrostingDict(
             cups_milk=4,
             cups_powdered_sugar=7
         )
     )
 
     print json.dumps(cake, indent=3)
-    # ----->
-    # {
-    #    "frosting": {
-    #       "cups_milk": 4,
-    #       "cups_powdered_sugar": 7
-    #    },
-    #    "type": "birthday",
-    #    "cups_sugar": 5,
-    #    "decorations": [
-    #       "sprinkles"
-    #    ],
-    #    "is_vegan": false
-    # }
-    
+    """
+    {
+       "frosting": {
+          "cups_milk": 4,
+          "cups_powdered_sugar": 7
+       },
+       "type": "birthday",
+       "cups_sugar": 5,
+       "decorations": [
+          "sprinkles"
+       ],
+       "is_vegan": false
+    }
+    """
+
 ```
