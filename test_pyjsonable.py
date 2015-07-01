@@ -218,6 +218,18 @@ class StrictDictValidateTests( PyJasonTestBase ):
         with self.assertRaises(AttributeError):
             cake["wack_attr"] = "no bad!"
 
+    # {
+    #    "frosting": {
+    #       "cups_milk": 4,
+    #       "cups_powdered_sugar": 7
+    #    },
+    #    "type": "birthday",
+    #    "cups_sugar": 5,
+    #    "decorations": [
+    #       "sprinkles"
+    #    ],
+    #    "is_vegan": false
+    # }
 class StrictDictTypeMapTests( PyJasonTestBase ):
     def test_valid_typed(self):
         cake = CakedDictTyped(
