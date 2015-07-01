@@ -224,11 +224,13 @@ class StrictDictTypeMapTests( PyJasonTestBase ):
             type="birthday",
             is_vegan=False,
             cups_sugar=5,
+            decorations=["sprinkles"],
             frosting=FrostingDict(
                 cups_milk=4,
                 cups_powdered_sugar=7
             )
         )
+        print json.dumps(cake, indent=3)
         self._test_json_dumps(cake)
 
     def test_invalid_typed(self):
