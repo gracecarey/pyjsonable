@@ -110,7 +110,7 @@ class StrictDictTests( PyJasonTestBase ):
         self.assertFalse(plain_dict.Meta.cannot_coexist_keys)
         self.assertFalse(plain_dict.Meta.allowed_keys)
 
-class StrictDictExtendTests( PyJasonTestBase ):
+class StrictDictValidateTests( PyJasonTestBase ):
     def test_valid_init(self):
         cake = CakeDict(
             type="birthday",
@@ -118,78 +118,241 @@ class StrictDictExtendTests( PyJasonTestBase ):
             color="red",
             num_layers=5
         )
-        cake.validate()
         self._test_json_dumps(cake)
 
     def test_missing_required_keys(self):
-        cake = CakeDict(
-            # type="birthday",
-            # is_vegan=False,
-            color="red",
-            num_layers=5
-        )
-        with self.assertRaises(AttributeError):
-            cake.validate()
-        cake.is_vegan = False
-        with self.assertRaises(AttributeError):
-            cake.validate()
-        cake.type="birthday"
-        cake.validate()
-        self._test_json_dumps(cake)
+        with self.assertRaises( AttributeError ):
+            CakeDict(
+                # type="birthday", <-- missing required
+                # is_vegan=False, <-- missing required
+                color="red",
+                num_layers=5
+            )
 
     def test_missing_at_least_one_required_key(self):
-        cake = CakeDict(
-            type="birthday",
-            is_vegan=False,
-            # color="red",
-            num_layers=5,
-            milk_type="2%"
-        )
-        with self.assertRaises(AttributeError):
-            cake.validate()
-        cake.color = "red"
-        cake.validate()
-        self._test_json_dumps(cake)
-        cake.hue = "scarlet"
-        cake.validate()
-        self._test_json_dumps(cake)
+        with self.assertRaises( AttributeError ):
+            CakeDict(
+                type="birthday",
+                is_vegan=False,
+                # color="red", <-- missing at_least_one_required
+                num_layers=5,
+                milk_type="2%"
+            )
 
     def test_violate_cannot_coexist(self):
-        cake = CakeDict(
-            type="birthday",
-            is_vegan=False,
-            color="red",
-            num_layers=5,
-            milk_type="2%",
-            vegan_milk_type="almond"
-        )
         with self.assertRaises(AttributeError):
-            cake.validate()
-        cake.pop("vegan_milk_type")
-        cake.validate()
-        self._test_json_dumps(cake)
+            CakeDict(
+                type="birthday",
+                is_vegan=False,
+                color="red",
+                num_layers=5,
+                milk_type="2%",  # <-- cannot coexist
+                vegan_milk_type="almond"  # <-- cannot coexist
+            )
 
     def test_violate_allowed_keys(self):
-        cake = CakeDict(
+        with self.assertRaises(AttributeError):
+            CakeDict(
+                type="birthday",
+                is_vegan=False,
+                color="red",
+                num_layers=5,
+                milk_type="2%",
+                wack_key="i am not allowed" # <-- key not among allowed
+            )
+
+    def test_cake_dict_only_required_keys(self):
+        with self.assertRaises(AttributeError):
+            CakeDictRequired({
+                "type": "some type"
+            })
+        cake = CakeDictRequired({
+            "type": "some type",
+            "is_vegan": True
+        })
+        self._test_json_dumps(cake)
+
+    def test_cake_dict_only_atleastone_keys(self):
+        with self.assertRaises(AttributeError):
+            CakeDictAtLeastOne()
+        cake = CakeDictAtLeastOne({
+            "hue": "blue",
+            "color": "a color"
+        })
+        self._test_json_dumps(cake)
+
+    def test_cake_dict_only_cannotcoexist_keys(self):
+        with self.assertRaises(AttributeError):
+            CakeDictCannotCoexist(
+                type="birthday",
+                is_vegan=False,
+                color="red",
+                num_layers=5,
+                milk_type="2%", # <-- cannot coexist
+                vegan_milk_type="almond" # <-- cannot coexist
+            )
+        cake = CakeDictCannotCoexist(
             type="birthday",
             is_vegan=False,
             color="red",
             num_layers=5,
             milk_type="2%",
-            wack_key="i am not allowed"
         )
+        self._test_json_dumps(cake)
         with self.assertRaises(AttributeError):
-            cake.validate()
-        cake.pop("wack_key")
-        cake.validate()
+            cake.vegan_milk_type = "almond" # <-- cannot coexist
+
+    def test_cake_dict_only_allowed_keys(self):
+        with self.assertRaises(AttributeError):
+            CakeDictAllowed(
+                wack_attr="i am not allowed",
+                num_layers=5,
+            )
+        cake = CakeDictAllowed(
+            num_layers=5,
+        )
+        cake["cups_sugar"]=100
+        self._test_json_dumps(cake)
+        with self.assertRaises(AttributeError):
+            cake.wack_attr = "no!"
+        with self.assertRaises(AttributeError):
+            cake["wack_attr"] = "no bad!"
+
+class StrictDictTypeMapTests( PyJasonTestBase ):
+    def test_valid_typed(self):
+        cake = CakedDictTyped(
+            type="birthday",
+            is_vegan=False,
+            cups_sugar=5,
+            frosting=FrostingDict(
+                cups_milk=4,
+                cups_powdered_sugar=7
+            )
+        )
         self._test_json_dumps(cake)
 
+    def test_invalid_typed(self):
+        with self.assertRaises( TypeError ):
+            CakedDictTyped(
+                cups_sugar="FIVE", # <-- invalid
+                type="birthday",
+                is_vegan=False,
+                frosting=FrostingDict(
+                    cups_milk=4,
+                    cups_powdered_sugar=7
+                )
+            )
+        with self.assertRaises( TypeError ):
+            FrostingDict(
+                cups_milk="SEVEN",
+                cups_powdered_sugar=10,
+            )
+        with self.assertRaises( TypeError ):
+            CakedDictTyped(
+                cups_sugar=5,
+                is_vegan=False,
+                type="birthday",
+                frosting=FrostingDict(
+                    cups_milk="SEVEN",
+                    cups_powdered_sugar=10,
+                )
+            )
+        with self.assertRaises( AttributeError ):
+            CakedDictTyped(
+                cups_sugar=5,
+                # is_vegan=False, <-- Missing required
+                # type="birthday",<-- Missing required
+                frosting=None
+            )
+
+    def test_invalid_update_with_kwargs(self):
+        cake = CakedDictTyped(
+            type="birthday",
+            is_vegan=False,
+            frosting=FrostingDict(
+                cups_milk=4,
+                cups_powdered_sugar=7
+            )
+        )
+        self._test_json_dumps(cake)
+        with self.assertRaises( TypeError ):
+            cake.update(is_vegan="not a bool!")
+
+    def test_invalid_update_with_literal(self):
+        cake = CakedDictTyped(
+            type="birthday",
+            is_vegan=True,
+            frosting=FrostingDict(
+                cups_milk=4,
+                cups_powdered_sugar=7
+            )
+        )
+        with self.assertRaises( TypeError ):
+            cake.update({
+                "is_vegan":"notbool!", # <-- invalid
+                "decorations": "sprinkles"
+            })
+        cake.update({
+            "is_vegan":True,
+            "decorations": "sprinkles"
+        })
+        self._test_json_dumps(cake)
+
+    def test_nullable_type(self):
+        cake = CakedDictTyped(
+            type="birthday",
+            is_vegan=True,
+        )
+        cake.frosting = None
+        self._test_json_dumps(cake)
+        with self.assertRaises( TypeError ):
+            cake.update(is_vegan="notbool!")
 #
 # Test objects
 #
+class CakeDictRequired( StrictDict ):
+    class Meta:
+        required_keys={"type", "is_vegan"}
+
+class CakeDictAtLeastOne( StrictDict ):
+    class Meta:
+        at_least_one_required_keys={"color", "hue", "shade"}
+
+class CakeDictCannotCoexist( StrictDict ):
+    class Meta:
+        cannot_coexist_keys={"milk_type", "vegan_milk_type"}
+
+class CakeDictAllowed( StrictDict ):
+    class Meta:
+        allowed_keys={"num_layers", "cups_sugar"}
+
 class CakeDict( StrictDict ):
     class Meta:
         required_keys={"type", "is_vegan"}
         at_least_one_required_keys={"color", "hue"}
         cannot_coexist_keys={"milk_type", "vegan_milk_type"}
         allowed_keys={"num_layers", "cups_sugar"}
+
+class FrostingDict( StrictDict ):
+    class Meta:
+        required_keys={"cups_powdered_sugar"}
+        type_map={
+            "cups_milk": {
+                "type": int
+            },
+        }
+class CakedDictTyped( CakeDict ):
+    class Meta:
+        required_keys={"type", "is_vegan"}
+        allowed_keys={"num_layers", "cups_sugar", "frosting", "decorations"}
+        type_map={
+            "cups_sugar": int,
+            "is_vegan": bool,
+            "num_layers": {
+                "type": int,
+            },
+            "frosting": {
+                "type":FrostingDict,
+                "nullable":True,
+            }
+        }
