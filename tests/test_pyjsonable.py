@@ -1,5 +1,8 @@
-import json, unittest
-from pyjsonable import StrictDict, StrictList
+import json
+import unittest
+
+from pyjsonable.pyjsonable import StrictDict, StrictList
+
 
 # To run:
 # $ python -m unittest tests.test_pyjsonable
