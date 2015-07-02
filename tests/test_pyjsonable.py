@@ -3,9 +3,6 @@ import unittest
 
 from pyjsonable.strict_objects import StrictDict, StrictList
 
-
-
-
 # To run:
 # $ python -m unittest tests.test_pyjsonable
 
@@ -241,6 +238,15 @@ class StrictDictExtendTests(PyJasonTestBase):
                 color="red",
                 num_layers=5
             )
+
+        with self.assertRaises(AttributeError):
+            WeddingCakedDict(
+                num_guests=100,
+                is_vegan=False,
+                # color="red",  <-- At least one required by parent CakeDict
+                num_layers=5
+            )
+
         with self.assertRaises(AttributeError):
             WeddingCakedDict(
                 type="wedding",  # <-- Not required or allowed in Meta override
@@ -248,6 +254,7 @@ class StrictDictExtendTests(PyJasonTestBase):
                 color="red",
                 num_layers=5
             )
+            
         cake = WeddingCakedDict(
             num_guests=100,
             is_vegan=False,
@@ -421,7 +428,7 @@ class CakeDict(StrictDict):
 
 
 class WeddingCakedDict(CakeDict):
-    class Meta:
+    class Meta(CakeDict.Meta):
         required_keys = {"is_vegan", "num_guests"}
 
 
