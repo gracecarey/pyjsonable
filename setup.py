@@ -5,7 +5,7 @@ from distutils.core import setup
 
 setup(
     name='pyjsonable',
-    version='0.5',
+    version='0.6',
     author=u'Grace Carey',
     author_email='gracecareymail@gmail.com',
     packages=find_packages(),
