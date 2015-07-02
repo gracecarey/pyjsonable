@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
-# -*- coding: utf-8 -*-
-from distutils.core import setup
+# # -*- coding: utf-8 -*-
+# from distutils.core import setup
 
 setup(
     name='pyjsonable',
