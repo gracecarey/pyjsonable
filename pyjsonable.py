@@ -1,10 +1,11 @@
+import collections
+
 class StrictDict(dict):
     class Meta:
         required_keys=set()
         at_least_one_required_keys=set()
         cannot_coexist_keys=set()
         allowed_keys=set()
-        type_map=dict()
 
     def __init__(self, iterable={}, **kwargs):
         super(StrictDict, self).__init__({})
@@ -98,24 +99,3 @@ class StrictDict(dict):
         if nullable:
             msg += "or None"
         raise TypeError(msg)
-        # # Check is class instance, then type
-        # if isinstance(value, AttrClass):
-        #     return
-        #
-        #         if not isinstance(value, AttrClassOrType):
-        #             msg = self.get_class_name() + " member '" + attr + "'"\
-        #             + " be of type " + str(AttrClassOrType)
-        #             if nullable:
-        #                 msg += "or None"
-        #     except(TypeError):
-        #         if not value is AttrClassOrType
-        #         raise AttributeError(msg)
-        # except(TypeError):
-        #     print "\n!!!"
-        #     print "attr:" + str(attr)
-        #     print "value:" + str(value)
-        #     print "value.__class__ " + str(value.__class__)
-        #     # print "AttrClass    " + str(AttrClass)
-        #     print "type_map_item " + str(type_map_item)
-        #     print "!!!!!\n"
-        #
