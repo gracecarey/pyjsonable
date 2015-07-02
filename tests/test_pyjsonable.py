@@ -1,13 +1,17 @@
 import json, unittest
-from pyjsonable import StrictDict
+from pyjsonable import StrictDict, StrictList
 
 # To run:
 # $ python -m unittest tests.test_pyjsonable
 
 class PyJasonTestBase(unittest.TestCase):
-    def _test_json_dumps(self, strict_dict):
-        strict_dict_jsoned = json.loads(json.dumps(strict_dict))
-        self.assertDictEqual(strict_dict_jsoned, strict_dict)
+    def _test_json_dumps(self, obj):
+        jsoned_obj = json.loads(json.dumps(obj))
+        if isinstance(obj, dict):
+            self.assertDictEqual(jsoned_obj, obj)
+            return
+        if isinstance(obj, list):
+            self.assertItemsEqual(jsoned_obj, obj)
 
 
 class StrictDictTests(PyJasonTestBase):
@@ -339,6 +343,62 @@ class StrictDictTypeMapTests(PyJasonTestBase):
         with self.assertRaises(TypeError):
             cake.update(is_vegan="notbool!")
 
+class StrictListTests(PyJasonTestBase):
+    def test_strict_list_valid(self):
+        cake_list = CakeList(
+            CakeDict(
+                type="birthday",
+                is_vegan=True,
+                color="red",
+                num_layers=5,
+                milk_type="2%",
+            ),
+            CakedDictTyped(
+                type="wedding",
+                is_vegan=False,
+                cups_sugar=5,
+                decorations=["sprinkles"],
+                frosting=FrostingDict(
+                    cups_milk=4,
+                    cups_powdered_sugar=7
+                )
+            )
+        )
+        self.assertEqual(len(cake_list), 2)
+
+        cake_list.append(
+            CakeDict(
+                type="birthday",
+                is_vegan=False,
+                hue="cream",
+                num_layers=5,
+            ),
+        )
+
+        self._test_json_dumps(cake_list)
+        self.assertEqual(len(cake_list), 3)
+
+    def test_strict_list_invalid(self):
+        with self.assertRaises(TypeError):
+            CakeList(
+                CakeDict(
+                    type="birthday",
+                    is_vegan=True,
+                    color="red",
+                    num_layers=5,
+                    milk_type="2%",
+                ),
+                dict(
+                    type="wedding",
+                    is_vegan=False,
+                    cups_sugar=5,
+                    decorations=["sprinkles"],
+                    frosting=FrostingDict(
+                        cups_milk=4,
+                        cups_powdered_sugar=7
+                    )
+                )
+            )
 
 #
 # Test objects
@@ -405,3 +465,7 @@ class CakedDictTyped(CakeDict):
                 "nullable": True,
             }
         }
+
+class CakeList(StrictList):
+    class Meta:
+        item_type = CakeDict

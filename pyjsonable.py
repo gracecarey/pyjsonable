@@ -99,3 +99,21 @@ class StrictDict(dict):
         if nullable:
             msg += "or None"
         raise TypeError(msg)
+
+class StrictList(list):
+    class Meta:
+        item_type = basestring
+
+    def __init__(self, *args):
+        # super(StrictList, self).__init__()
+        for item in (list(args)):
+            self.append(item)
+
+    def get_class_name(self):
+        return self.__class__.__name__
+
+    def append(self, item):
+        if not isinstance(item, self.Meta.item_type):
+            raise TypeError(self.get_class_name() + " items must be of type " +\
+                  str(self.Meta.item_type))
+        super(StrictList, self).append(item)
