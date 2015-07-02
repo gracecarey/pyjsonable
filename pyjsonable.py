@@ -1,5 +1,3 @@
-import collections
-
 class StrictDict(dict):
     class Meta:
         required_keys=set()
