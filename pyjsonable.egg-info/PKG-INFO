@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: pyjsonable
-Version: 0.2
+Version: 0.3
 Summary: Native, validatable python objects serializable by json.dumps()
 Home-page: https://github.com/gracecarey/pyjsonable
 Author: Grace Carey
