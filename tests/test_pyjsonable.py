@@ -383,6 +383,51 @@ class StrictDictItemTypeTests(PyJasonTestBase):
             ),
         )
         self._test_json_dumps(party_budget)
+    def test_multiple_class_types_no_map(self):
+        with self.assertRaises(TypeError):
+            UrlLinkMap(
+                index="www.mypage.com",
+                about=dict(
+                    href="www.mypage.com/about",
+                    meta={
+                        "has_form": True
+                    }
+                )
+            )
+        url_link = UrlLinkMap(
+            index="www.mypage.com",
+            about=ComplexLink(
+                href="www.mypage.com/about",
+                meta={
+                    "has_form": True
+                }
+            )
+        )
+        self._test_json_dumps(url_link)
+
+    def test_multiple_class_types_mapped(self):
+        with self.assertRaises(TypeError):
+            SiteInfoMap(
+                more_link=100,
+                total_pages=10
+            )
+
+        dict_type_1 = SiteInfoMap(
+            more_link="www.stringstyle.com",
+            total_pages=10
+        )
+        self._test_json_dumps(dict_type_1)
+
+        dict_type_2 = SiteInfoMap(
+            about=ComplexLink(
+                href="www.complexlinkclass.com",
+                meta={
+                    "has_form": True
+                }
+            ),
+            total_pages=10
+        )
+        self._test_json_dumps(dict_type_2)
 
 class StrictListTests(PyJasonTestBase):
     def test_strict_list_valid(self):
@@ -517,4 +562,19 @@ class PartyExpenseItem(StrictDict):
 class PartyBudget(StrictDict):
     class Meta:
         item_type=PartyExpenseItem
+
+class ComplexLink(StrictDict):
+    required_keys = {"href"}
+    allowed_keys = {"meta"}
+
+class UrlLinkMap(StrictDict):
+    class Meta:
+        item_type= (ComplexLink, basestring)
+
+class SiteInfoMap(StrictDict):
+    class Meta:
+        item_type= {
+            "more_link": (ComplexLink, basestring),
+            "total_pages": int
+        }
 
