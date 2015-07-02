@@ -569,11 +569,11 @@ class ComplexLink(StrictDict):
 
 class UrlLinkMap(StrictDict):
     class Meta:
-        item_type= (ComplexLink, basestring)
+        item_type = (ComplexLink, basestring)
 
 class SiteInfoMap(StrictDict):
     class Meta:
-        item_type= {
+        item_type = {
             "more_link": (ComplexLink, basestring),
             "total_pages": int
         }
