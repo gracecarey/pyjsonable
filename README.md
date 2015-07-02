@@ -17,7 +17,7 @@ class FrostingDict( StrictDict ):
             },
         }
 
-class CakedDictTyped( CakeDict ):
+class CakedDictTyped( StrictDict ):
     class Meta:
         required_keys={"type", "is_vegan"}
         allowed_keys={"num_layers", "cups_sugar", "frosting", "decorations"}
