@@ -78,25 +78,44 @@ class StrictDict(dict):
                 + " Allowed members: " + str([str(key) for key in all_allowed_keys]))
 
     def validate_attr_class(self, attr, value):
-        item_type = getattr(self.Meta, "item_type", {})
-
+        item_type = getattr(self.Meta, "item_type", None)
         if not item_type:
             return
 
+        msg_part = self.get_class_name() + " member '" + attr + "'"\
+            + " be of type "
+
+        # Case where a single type is declared for all dict values
+        if not isinstance(item_type, dict):
+            AttrClass = item_type
+            if not isinstance(value, item_type):
+                raise TypeError(msg_part + str(AttrClass))
+            return
+
+        # Case where an type map was declared but this attr not present in map
         if not attr in item_type.keys():
             return
-        item_type_item = item_type.get(attr)
 
-        AttrClass = item_type_item.get("type") if isinstance(item_type_item, dict) else item_type_item
-        nullable = item_type_item.get("nullable") if isinstance(item_type_item, dict) else False
+        # The item from the type map
+        mapped_item_type = item_type.get(attr)
+
+        # Case where a single type is declared for this attribute
+        if not isinstance(mapped_item_type, dict):
+            AttrClass = mapped_item_type
+            if not isinstance(value, AttrClass):
+                raise TypeError(msg_part + str(AttrClass))
+            return
+
+        # Case where a complex dict with members "type" and "nullable" declared for this attribute
+        AttrClass = mapped_item_type.get("type")
+        nullable = mapped_item_type.get("nullable", False)
 
         if (nullable and value == None) or isinstance(value, AttrClass):
             return
 
-        msg = self.get_class_name() + " member '" + attr + "'"\
-            + " be of type " + str(AttrClass)
+        msg = msg_part + str(AttrClass)
         if nullable:
-            msg += "or None"
+            msg += " or None"
         raise TypeError(msg)
 
 class StrictList(list):

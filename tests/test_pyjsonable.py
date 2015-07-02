@@ -254,7 +254,7 @@ class StrictDictExtendTests(PyJasonTestBase):
                 color="red",
                 num_layers=5
             )
-            
+
         cake = WeddingCakedDict(
             num_guests=100,
             is_vegan=False,
@@ -264,7 +264,7 @@ class StrictDictExtendTests(PyJasonTestBase):
         self._test_json_dumps(cake)
 
 
-class StrictDictTypeMapTests(PyJasonTestBase):
+class StrictDictItemTypeTests(PyJasonTestBase):
     def test_valid_typed(self):
         cake = CakedDictTyped(
             type="birthday",
@@ -354,6 +354,35 @@ class StrictDictTypeMapTests(PyJasonTestBase):
         self._test_json_dumps(cake)
         with self.assertRaises(TypeError):
             cake.update(is_vegan="notbool!")
+
+    def test_item_type_no_map(self):
+        with self.assertRaises(TypeError):
+            PartyBudget(
+                food = PartyExpenseItem(
+                    cost_per_guest=50,
+                    total_cost=500
+                ),
+                drink = PartyExpenseItem(
+                    cost_per_guest=75,
+                    total_cost=750
+                ),
+                entertainment=1000 #<-- should be PartyExpenseItem
+            )
+        party_budget = PartyBudget(
+            food = PartyExpenseItem(
+                cost_per_guest=50,
+                total_cost=500
+            ),
+            drink = PartyExpenseItem(
+                cost_per_guest=75,
+                total_cost=750
+            ),
+            entertainment = PartyExpenseItem(
+                cost_per_guest=50,
+                total_cost=500
+            ),
+        )
+        self._test_json_dumps(party_budget)
 
 class StrictListTests(PyJasonTestBase):
     def test_strict_list_valid(self):
@@ -461,7 +490,6 @@ class FrostingDict(StrictDict):
             },
         }
 
-
 class CakedDictTyped(CakeDict):
     class Meta:
         required_keys = {"type", "is_vegan"}
@@ -481,3 +509,12 @@ class CakedDictTyped(CakeDict):
 class CakeList(StrictList):
     class Meta:
         item_type = CakeDict
+
+class PartyExpenseItem(StrictDict):
+    class Meta:
+        required_keys = {"cost_per_guest", "total_cost"}
+
+class PartyBudget(StrictDict):
+    class Meta:
+        item_type=PartyExpenseItem
+
