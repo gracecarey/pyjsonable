@@ -4,6 +4,7 @@ class StrictDict(dict):
         at_least_one_required_keys=set()
         cannot_coexist_keys=set()
         allowed_keys=set()
+        item_type={}
 
     def __init__(self, iterable={}, **kwargs):
         super(StrictDict, self).__init__({})
@@ -77,17 +78,17 @@ class StrictDict(dict):
                 + " Allowed members: " + str([str(key) for key in all_allowed_keys]))
 
     def validate_attr_class(self, attr, value):
-        type_map = getattr(self.Meta, "type_map", {})
+        item_type = getattr(self.Meta, "item_type", {})
 
-        if not type_map:
+        if not item_type:
             return
 
-        if not attr in type_map.keys():
+        if not attr in item_type.keys():
             return
-        type_map_item = type_map.get(attr)
+        item_type_item = item_type.get(attr)
 
-        AttrClass = type_map_item.get("type") if isinstance(type_map_item, dict) else type_map_item
-        nullable = type_map_item.get("nullable") if isinstance(type_map_item, dict) else False
+        AttrClass = item_type_item.get("type") if isinstance(item_type_item, dict) else item_type_item
+        nullable = item_type_item.get("nullable") if isinstance(item_type_item, dict) else False
 
         if (nullable and value == None) or isinstance(value, AttrClass):
             return

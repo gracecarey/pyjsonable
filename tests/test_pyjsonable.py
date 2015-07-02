@@ -125,7 +125,7 @@ class StrictDictTests(PyJasonTestBase):
         self._test_json_dumps(no_meta_dict)
 
 
-class StrictDictValidateTests(PyJasonTestBase):
+class StrictDictExtendTests(PyJasonTestBase):
     def test_valid_init(self):
         cake = CakeDict(
             type="birthday",
@@ -448,7 +448,7 @@ class CakeDictAllowed(StrictDict):
 class FrostingDict(StrictDict):
     class Meta:
         required_keys = {"cups_powdered_sugar"}
-        type_map = {
+        item_type = {
             "cups_milk": {
                 "type": int
             },
@@ -459,7 +459,7 @@ class CakedDictTyped(CakeDict):
     class Meta:
         required_keys = {"type", "is_vegan"}
         allowed_keys = {"num_layers", "cups_sugar", "frosting", "decorations"}
-        type_map = {
+        item_type = {
             "cups_sugar": int,
             "is_vegan": bool,
             "num_layers": {
