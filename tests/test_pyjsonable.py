@@ -1,7 +1,8 @@
 import json
 import unittest
 
-from strict_objects import StrictDict, StrictList
+from pyjsonable.strict_objects import StrictDict, StrictList
+
 
 
 
